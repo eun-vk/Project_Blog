@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- blog/templates/blog/post_form.html -->
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div>
+        <label>제목:</label>
+        <input type="text" name="title" value="{{ post.title|default:'' }}" required>
+    </div>
+    <div>
+        <label>내용:</label>
+        <textarea name="content" required>{{ post.content|default:'' }}</textarea>
+    </div>
+    <div>
+        <label>카테고리:</label>
+        <input type="text" name="category" value="{{ post.category|default:'' }}" required>
+    </div>
+    <div>
+        <label>이미지:</label>
+        <input type="file" name="image" accept="image/*">
+        {% if post.image %}
+            <p>현재 이미지: <img src="{{ post.image.url }}" alt="현재 이미지" style="max-width: 200px;"></p>
+        {% endif %}
+    </div>
+    <button type="submit">{% if post %}수정{% else %}작성{% endif %}</button>
+</form>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!-- templates/blog/base_readonly.html -->
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>{% block title %}독서 블로그{% endblock %}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="{% static 'read_only/css/main.css' %}" />
+    <noscript><link rel="stylesheet" href="{% static 'read_only/css/noscript.css' %}" /></noscript>
+</head>
+<body class="is-preload">
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Main -->
+    <div id="main">
+        <div class="inner">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="inner">
+            {% include 'blog/sidebar.html' %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="{% static 'read_only/js/jquery.min.js' %}"></script>
+<script src="{% static 'read_only/js/browser.min.js' %}"></script>
+<script src="{% static 'read_only/js/breakpoints.min.js' %}"></script>
+<script src="{% static 'read_only/js/util.js' %}"></script>
+<script src="{% static 'read_only/js/main.js' %}"></script>
+
+</body>
+</html>
+
+<!-- templates/blog/post_list.html -->
+{% extends 'blog/base_readonly.html' %}
+{% load static %}
+
+{% block title %}글 목록 | 독서 블로그{% endblock %}
+
+{% block content %}
+<header>
+    <h1>책과 함께하는 일상</h1>
+    <p>읽고 쓰고 기록하는 나의 독서 블로그입니다.</p>
+</header>
+
+<section>
+    {% for post in posts %}
+    <article>
+        <header>
+            <h2><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
+            <p>{{ post.created_at|date:"Y년 m월 d일" }}</p>
+        </header>
+        {% if post.image %}
+        <span class="image fit"><img src="{{ post.image.url }}" alt="{{ post.title }}"></span>
+        {% endif %}
+        <p>{{ post.content|truncatewords:30 }}</p>
+        <ul class="actions">
+            <li><a href="{% url 'post_detail' post.pk %}" class="button">자세히 보기</a></li>
+        </ul>
+    </article>
+    {% empty %}
+    <p>아직 게시글이 없습니다.</p>
+    {% endfor %}
+</section>
+{% endblock %}
