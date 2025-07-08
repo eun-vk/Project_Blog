@@ -1,0 +1,144 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ post.title }} | 블로그</title>
+  <link rel="stylesheet" href="{% static 'blog/css/post_detail.css' %}" />
+  <script src="https://kit.fontawesome.com/yourkit.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <article class="post-detail">
+
+    <!-- 제목 / 작성자 / 날짜 -->
+    <header class="post-header">
+      <h1 class="post-title">{{ post.title }}</h1>
+
+      <!-- 카테고리 표시 추가 -->
+      <p class="post-category">카테고리: <strong>{{ post.category }}</strong></p>
+
+      <div class="post-meta">
+        <div class="author-avatar"></div>
+        <span class="author-name">{{ post.author.username }}</span>
+        <time class="post-date" datetime="{{ post.created_at|date:'Y-m-d' }}">
+          {{ post.created_at|date:"Y.m.d" }}
+        </time>
+      </div>
+    </header>
+
+    <!-- 대표 이미지 (제목 아래) -->
+    {% if post.image %}
+    <img src="{{ post.image.url }}" alt="포스트 이미지" class="post-image" />
+    {% endif %}
+
+    <!-- 본문 -->
+    <section class="post-body">
+      {{ post.content|linebreaks }}
+    </section>
+
+    <!-- 수정/삭제 버튼 -->
+    {% if request.user == post.author %}
+    <div class="post-actions">
+      <a href="{% url 'blog:post_edit' post.pk %}" class="post-button edit">수정하기</a>
+      <a href="{% url 'blog:post_delete' post.pk %}" class="post-button delete"
+         onclick="return confirm('정말 삭제하시겠습니까?');">삭제하기</a>
+    </div>
+    {% endif %}
+
+    <!-- 이전글 / 다음글 -->
+    <div class="post-nav">
+      {% if previous_post %}
+      <a href="{% url 'blog:post_detail' previous_post.pk %}" class="nav-link prev">← {{ previous_post.title }}</a>
+      {% endif %}
+      {% if next_post %}
+      <a href="{% url 'blog:post_detail' next_post.pk %}" class="nav-link next">{{ next_post.title }} →</a>
+      {% endif %}
+    </div>
+
+    <!-- 댓글 -->
+    <section class="post-comments">
+      <h2 class="comments-title">댓글</h2>
+
+      {% for comment in post.comments.all %}
+      <div class="comment" id="comment-{{ comment.pk }}" style="position: relative; padding-bottom: 3em;">
+        <strong>{{ comment.author.username }}</strong>
+
+        <!-- 댓글 내용 표시 -->
+        <div class="comment-content-view">
+          <p>{{ comment.content|linebreaks }}</p>
+        </div>
+
+        <time class="comment-date">{{ comment.created_at|date:"Y.m.d H:i" }}</time>
+
+        {% if user == comment.author %}
+        <!-- 수정 버튼 (왼쪽 하단) -->
+        <button
+          class="comment-btn edit-btn comment-edit-toggle-btn"
+          data-comment-id="{{ comment.pk }}"
+          style="position: absolute; bottom: 0; left: 0; margin: 8px 0;">
+          수정
+        </button>
+
+        <!-- 삭제 버튼 (오른쪽 하단) -->
+        <a href="{% url 'blog:comment_delete' comment.pk %}"
+           class="comment-btn delete-btn"
+           style="position: absolute; bottom: 0; right: 0; margin: 8px 0;"
+           onclick="return confirm('정말 이 댓글을 삭제하시겠습니까?');">
+          삭제
+        </a>
+        {% endif %}
+
+        <!-- 인라인 수정 폼, 기본 숨김 -->
+        <div class="comment-edit-form" id="edit-form-{{ comment.pk }}" style="display:none;">
+          <form method="post" action="{% url 'blog:comment_edit' comment.pk %}">
+            {% csrf_token %}
+            <textarea name="content" rows="4" required>{{ comment.content }}</textarea>
+            <button type="submit" class="comment-btn save-btn">저장</button>
+            <button type="button" class="comment-btn cancel-btn comment-edit-cancel-btn" data-comment-id="{{ comment.pk }}">취소</button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <p class="no-comments">아직 댓글이 없습니다.</p>
+      {% endfor %}
+
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'blog:comment_create' post.pk %}">
+        {% csrf_token %}
+        <textarea name="content" rows="4" placeholder="댓글을 입력하세요..." required></textarea>
+        <button type="submit" class="comment-submit">댓글 작성</button>
+      </form>
+      {% else %}
+      <p class="login-comment">댓글을 작성하려면 <a href="{% url 'accounts:login' %}">로그인</a> 해주세요.</p>
+      {% endif %}
+    </section>
+
+  </article>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 수정 버튼 클릭 시 인라인 폼 보이고 내용 숨김
+      document.querySelectorAll('.comment-edit-toggle-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const id = button.getAttribute('data-comment-id');
+          document.getElementById(`edit-form-${id}`).style.display = 'block';
+          button.style.display = 'none';
+          document.querySelector(`#comment-${id} .comment-content-view`).style.display = 'none';
+        });
+      });
+
+      // 취소 버튼 클릭 시 인라인 폼 숨기고 내용+수정 버튼 보임
+      document.querySelectorAll('.comment-edit-cancel-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const id = button.getAttribute('data-comment-id');
+          document.getElementById(`edit-form-${id}`).style.display = 'none';
+          document.querySelector(`#comment-${id} .comment-edit-toggle-btn`).style.display = 'inline-block';
+          document.querySelector(`#comment-${id} .comment-content-view`).style.display = 'block';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

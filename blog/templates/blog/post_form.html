@@ -1,34 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="ko-KR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% if post %}글 수정하기{% else %}글 작성하기{% endif %}</title>
+  <link rel="stylesheet" href="{% static 'blog/css/form.css' %}" />
 </head>
 <body>
-    <!-- blog/templates/blog/post_form.html -->
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div>
-        <label>제목:</label>
-        <input type="text" name="title" value="{{ post.title|default:'' }}" required>
-    </div>
-    <div>
-        <label>내용:</label>
-        <textarea name="content" required>{{ post.content|default:'' }}</textarea>
-    </div>
-    <div>
-        <label>카테고리:</label>
-        <input type="text" name="category" value="{{ post.category|default:'' }}" required>
-    </div>
-    <div>
-        <label>이미지:</label>
-        <input type="file" name="image" accept="image/*">
-        {% if post.image %}
-            <p>현재 이미지: <img src="{{ post.image.url }}" alt="현재 이미지" style="max-width: 200px;"></p>
-        {% endif %}
-    </div>
-    <button type="submit">{% if post %}수정{% else %}작성{% endif %}</button>
-</form>
+
+  <div class="main">
+    <h2 class="main-title">{% if post %}글 수정하기{% else %}글 작성하기{% endif %}</h2>
+    <p class="main-desc">내용을 입력 해주세요.</p>
+
+    <form action="{% if post %}{% url 'blog:post_edit' post.pk %}{% else %}{% url 'blog:post_create' %}{% endif %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <table class="form-table">
+        <tr>
+          <th><label for="category">카테고리</label></th>
+          <td>
+            <select id="category" name="category">
+              <option value="소설" {% if post and post.category == "소설" %}selected{% endif %}>소설</option>
+              <option value="에세이" {% if post and post.category == "에세이" %}selected{% endif %}>에세이</option>
+              <option value="자기계발" {% if post and post.category == "자기계발" %}selected{% endif %}>자기계발</option>
+              <option value="시" {% if post and post.category == "시" %}selected{% endif %}>시</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="board-title">제목</label></th>
+          <td>
+            <input type="text" id="board-title" name="title" required value="{% if post %}{{ post.title }}{% endif %}" />
+            <button type="button" id="ai-helper-btn" style="margin-top:8px;">✍️ AI 도우미</button>
+            <p id="loading-msg" style="display:none; color: #555; margin-top:4px;">AI가 내용을 생성 중입니다...</p>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="board-content">내용</label></th>
+          <td>
+            <textarea id="board-content" name="content" rows="10" required>{% if post %}{{ post.content }}{% endif %}</textarea>
+          </td>
+        </tr>
+        <tr>
+          <th><label for="board-file">파일첨부</label></th>
+          <td><input type="file" id="board-file" name="image" /></td>
+        </tr>
+      </table>
+
+      <div class="btn-group">
+        <a href="{% url 'blog:post_list' %}" class="btn">목록</a>
+        <button type="reset" class="btn">초기화</button>
+        <button type="submit" class="btn primary">{{ button_text }}</button>
+      </div>
+    </form>
+  </div>
+
+  <footer class="footer">
+    <p></p>
+  </footer>
+
+  <script>
+    document.getElementById('ai-helper-btn').addEventListener('click', async () => {
+      const title = document.getElementById('board-title').value.trim();
+      const contentField = document.getElementById('board-content');
+      const loadingMsg = document.getElementById('loading-msg');
+      const button = document.getElementById('ai-helper-btn');
+
+      if (!title) {
+        alert('제목을 먼저 입력해 주세요.');
+        return;
+      }
+
+      loadingMsg.style.display = 'block';
+      button.disabled = true;
+      button.textContent = '✍️ 생성 중...';
+
+      try {
+        const response = await fetch('/blog/generate/', {  // ★ 여기 수정됨 ★
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: title })
+        });
+
+        if (!response.ok) throw new Error("GPT 서버 오류");
+
+        const data = await response.json();
+
+        // GPT 결과를 기존 내용 위에 붙이기
+        contentField.value = data.result.trim() + "\n\n" + contentField.value;
+
+      } catch (error) {
+        alert('❌ AI 응답을 받아오지 못했습니다. 콘솔 로그를 확인해 주세요.');
+        console.error('GPT 요청 오류:', error);
+      } finally {
+        loadingMsg.style.display = 'none';
+        button.disabled = false;
+        button.textContent = '✍️ AI 도우미';
+      }
+    });
+  </script>
+
 </body>
 </html>

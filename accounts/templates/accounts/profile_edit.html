@@ -1,0 +1,78 @@
+<!-- templates/accounts/profile_edit.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>프로필 수정</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fdfdfd;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="text"],
+    textarea {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+    }
+    input[type="file"] {
+      border: none;
+    }
+    .submit-button {
+      padding: 10px;
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .submit-button:hover {
+      background-color: #2980b9;
+    }
+    .back-link {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .back-link a {
+      text-decoration: none;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>프로필 수정</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="submit-button">저장하기</button>
+  </form>
+
+  <div class="back-link">
+    <a href="{% url 'accounts:profile_view' %}">← 프로필 보기로 돌아가기</a>
+  </div>
+
+</body>
+</html>

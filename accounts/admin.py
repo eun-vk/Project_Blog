@@ -1,6 +1,7 @@
-
 from django.contrib import admin
-from .models import Post, Profile, Comment
+from .models import Profile
+from blog.models import Post, Comment  # ✅ Comment는 blog.models에서 가져옴
+
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
@@ -8,9 +9,11 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ['category', 'created_at']
     search_fields = ['title', 'content']
 
+
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'nickname']
+
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):

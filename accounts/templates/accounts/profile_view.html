@@ -1,0 +1,64 @@
+<!-- templates/accounts/profile_view.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>내 프로필</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    img {
+      display: block;
+      margin: 0 auto 20px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    p {
+      font-size: 16px;
+      margin: 12px 0;
+    }
+    .buttons {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .buttons a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: white;
+      background: #3498db;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>내 프로필</h2>
+
+  {% if profile.profile_image %}
+    <img src="{{ profile.profile_image.url }}" alt="프로필 이미지">
+  {% endif %}
+
+  <p><strong>닉네임:</strong> {{ profile.nickname|default:user.username }}</p>
+  <p><strong>소개:</strong> {{ profile.bio|default:"소개가 없습니다." }}</p>
+
+  <div class="buttons">
+    <a href="{% url 'accounts:profile_edit' %}">프로필 수정</a>
+    <a href="{% url 'accounts:password_change' %}">비밀번호 변경</a>
+    <a href="{% url 'blog:post_list' %}">홈으로 돌아가기</a>
+  </div>
+</body>
+</html>
