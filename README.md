@@ -43,3 +43,6 @@ Django_BlogProject/
 └── 🧪 test_openapi.py
 ```
 
+https://dbdiagram.io/d/686d7d6af413ba3508ea4401
+
+
