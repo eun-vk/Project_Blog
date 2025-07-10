@@ -27,6 +27,8 @@ def post_list(request):
 
     profile = None
     if request.user.is_authenticated:
+        # TODO: 저라면, 아래 코드는 모델 클래스에 넣어서, User 생성 시에 자동으로 Profile 생성하기
+        # 현재 뷰에서는 profile 참조만 하는 거죠. request.user.profile
         profile, _ = Profile.objects.get_or_create(user=request.user)
 
     context = {
@@ -42,7 +44,8 @@ def post_list(request):
 def post_create(request):
     """게시글 작성 (로그인 사용자만 가능)"""
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
+        # DRF를 통한 API할 때, 저 인자 부분이 조금 헷갈릴 수 있어요.
+        form = PostForm(data=request.POST, files=request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -66,7 +69,7 @@ def post_detail(request, pk):
 
         # 댓글 가져오기
         comments = Comment.objects.filter(post=post, parent=None).order_by('-created_at')
-        
+
         return render(request, 'blog/post_detail.html', {
             'post': post,
             'comments': comments
@@ -136,7 +139,9 @@ def comment_create(request, post_pk):
     """댓글 작성"""
     post = get_object_or_404(Post, pk=post_pk)
 
+    # 장고 폼을 사용하지 않은 상황.
     if request.method == 'POST':
+        # 유저의 입력을 전적으로 신뢰하는 상황. => 우리가 원하는 스펙에 맞는 지에 검사가 반드시 있어야합니다.
         content = request.POST.get('content')
         if content:
             Comment.objects.create(
@@ -159,7 +164,7 @@ def comment_edit(request, comment_pk):
         return redirect('blog:post_detail', pk=comment.post.pk)
 
     if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
+        content = request.POST.get('content', '').strip()  # 보안사고로 이어질 수 있습니다.
         if content:
             comment.content = content
             comment.save()
@@ -230,12 +235,13 @@ def generate_intro(request):
             prompt = data.get("prompt", "")
             print(f"프롬프트: {prompt}")
 
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": f"{prompt}에 어울리는 블로그 도입부를 써줘"}],
                 max_tokens=300,
             )
-            result_text = response['choices'][0]['message']['content']
+            # result_text = response['choices'][0]['message']['content']  # 1.x 미만에서 동작하는 코드
+            result_text = response.choices[0].message.content  # 1.x 이상
             print(f"OpenAI 응답: {result_text}")
 
             return JsonResponse({"result": result_text})
