@@ -35,4 +35,4 @@ static/
 secret_key.txt
 
 .env
-requirements.txt
+
