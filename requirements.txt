@@ -1,0 +1,7 @@
+django~=5.2.0
+pillow
+
+django-crispy-forms
+crispy-bootstrap5
+
+openai
